@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/IPFS-ADP/static/css/main.e5738d89.css",
+    "main.js": "/IPFS-ADP/static/js/main.eb57e025.js",
+    "index.html": "/IPFS-ADP/index.html",
+    "main.e5738d89.css.map": "/IPFS-ADP/static/css/main.e5738d89.css.map",
+    "main.eb57e025.js.map": "/IPFS-ADP/static/js/main.eb57e025.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e5738d89.css",
+    "static/js/main.eb57e025.js"
+  ]
+}
