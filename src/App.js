@@ -215,7 +215,7 @@ function App() {
                 </div>
                 {message && (
                     <div className={`fixed bottom-5 right-5 p-4 rounded-lg shadow-2xl text-white ${
-                        message.type === 'success' ? 'bg-green-600' : 'bg-red-600' : 'bg-blue-600'
+                        message.type === 'success' ? 'bg-green-600' : message.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
                     }`}>
                         {message.text}
                     </div>
