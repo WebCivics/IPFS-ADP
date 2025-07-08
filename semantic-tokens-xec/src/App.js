@@ -185,11 +185,9 @@ export default function App() {
     const [activeTab, setActiveTab] = useState('properties');
     
     // Form State
-    const [tokenName, setTokenName] = useState('My Semantic Token');
-    const [tokenTicker, setTokenTicker] = useState('MST');
-    const [tokenDecimals, setTokenDecimals] = useState(2);
+    const [FileName, setFileName] = useState('My Semantic File');
     const [properties, setProperties] = useState([
-        { id: 1, schema: 'dcterms', property: 'description', value: 'A token with rich, machine-readable metadata.', type: 'literal' },
+        { id: 1, schema: 'dcterms', property: 'description', value: 'A File with rich, machine-readable metadata.', type: 'literal' },
         { id: 2, schema: 'foaf', property: 'maker', value: 'https://my-profile.example.com', type: 'uri' },
     ]);
     const [shapes, setShapes] = useState([]);
@@ -249,14 +247,12 @@ export default function App() {
 
     // --- State Serialization ---
     const getFullState = useCallback(() => ({
-        tokenName, tokenTicker, tokenDecimals, properties, shapes,
+        FileName, properties, shapes,
         selectedOntologies, prefixes, sameAsRelations, activeShapeId, newShapeName, userOntologies
-    }), [tokenName, tokenTicker, tokenDecimals, properties, shapes, selectedOntologies, prefixes, sameAsRelations, activeShapeId, newShapeName, userOntologies]);
+    }), [FileName, properties, shapes, selectedOntologies, prefixes, sameAsRelations, activeShapeId, newShapeName, userOntologies]);
 
     const setFullState = (newState) => {
-        setTokenName(newState.tokenName || 'My Semantic Token');
-        setTokenTicker(newState.tokenTicker || 'MST');
-        setTokenDecimals(newState.tokenDecimals || 2);
+        setFileName(newState.FileName || 'My Semantic File');
         setProperties(newState.properties || []);
         setShapes(newState.shapes || []);
         setSelectedOntologies(newState.selectedOntologies || ['dcterms', 'foaf']);
@@ -270,7 +266,7 @@ export default function App() {
     // --- Solid & Local Storage Data Handling ---
     const getDraftsContainerUrl = (userWebId) => {
         const podUrl = new URL(userWebId);
-        podUrl.pathname = '/public/eCashTokenCreator/drafts/';
+        podUrl.pathname = '/public/IPFSRDFFileCreator/drafts/';
         return podUrl.href;
     };
 
@@ -302,10 +298,10 @@ export default function App() {
                     setSolidSession(session);
                     setWebId(session.webId);
                     fetchDrafts(session);
-                    localStorage.removeItem('eCashTokenCreator_localDraft'); // Clear local draft on login
+                    localStorage.removeItem('IPFSRDFFileCreator_localDraft'); // Clear local draft on login
                 } else {
                     // Load from local storage if not logged in
-                    const localData = localStorage.getItem('eCashTokenCreator_localDraft');
+                    const localData = localStorage.getItem('IPFSRDFFileCreator_localDraft');
                     if (localData) {
                         setFullState(JSON.parse(localData));
                     }
@@ -319,7 +315,7 @@ export default function App() {
         window.solidClientAuthentication.login({
             oidcIssuer: solidIdp,
             redirectUrl: window.location.href,
-            clientName: "eCash Semantic Token Creator"
+            clientName: "IPFS RDF File Creator"
         });
     };
 
@@ -331,8 +327,8 @@ export default function App() {
     };
 
     const handleSaveToPod = async () => {
-        if (!solidSession || !tokenName.trim()) {
-            showMessage("Please login and provide a token name to save.", "error");
+        if (!solidSession || !FileName.trim()) {
+            showMessage("Please login and provide a File Name to save.", "error");
             return;
         }
         setIsSaving(true);
@@ -340,12 +336,12 @@ export default function App() {
 
         const { createSolidDataset, createThing, setThing, saveSolidDatasetAt, buildThing } = window.solidClient;
         const containerUrl = getDraftsContainerUrl(solidSession.webId);
-        const draftUrl = `${containerUrl}${encodeURIComponent(tokenName.trim().replace(/\//g, '-'))}.ttl`;
+        const draftUrl = `${containerUrl}${encodeURIComponent(FileName.trim().replace(/\//g, '-'))}.ttl`;
         
         const currentState = getFullState();
 
         let myThing = buildThing(createThing({ url: draftUrl }))
-            .addStringNoLocale("http://purl.org/dc/terms/title", tokenName)
+            .addStringNoLocale("http://purl.org/dc/terms/title", FileName)
             .addStringNoLocale("http://www.w3.org/ns/iana/media-types/text/turtle#mediaType", JSON.stringify(currentState))
             .build();
             
@@ -387,7 +383,7 @@ export default function App() {
         if (isInitialLoad || webId) return;
 
         const currentState = getFullState();
-        localStorage.setItem('eCashTokenCreator_localDraft', JSON.stringify(currentState));
+        localStorage.setItem('IPFSRDFFileCreator_localDraft', JSON.stringify(currentState));
     }, [getFullState, webId, isInitialLoad]);
 
 
@@ -432,7 +428,7 @@ export default function App() {
             return `  ${key} ${value} ;`;
         }).join('\n');
         const sameAsLines = sameAsRelations.filter(r => r.termA && r.termB).map(r => `${r.termA} owl:sameAs ${r.termB} .`).join('\n');
-        const tokenDefinition = `<>\n  a <http://slp.dev/ont/v1#Token> ;\n  dcterms:title "${tokenName}" ;\n  <http://slp.dev/ont/v1#ticker> "${tokenTicker}" ;\n${propertyLines}\n.`;
+        const FileDefinition = `<>\n  a <http://slp.dev/ont/v1#File> ;\n  dcterms:title "${FileName}" ;\n${propertyLines}\n.`;
         const shaclLines = shapes.map(shape => {
             if (!shape.name) return '';
             const shapeTriples = [`:${shape.name} a sh:NodeShape ;`];
@@ -450,9 +446,9 @@ export default function App() {
             }).filter(Boolean).join('\n');
             return `${shapeTriples.join('\n')}\n${constraintTriples}`;
         }).join('\n\n');
-        const fullRdf = `${prefixLines}\n\n${tokenDefinition.replace(/;\s*\./, ' .')}\n\n${shaclLines}\n\n${sameAsLines}`;
+        const fullRdf = `${prefixLines}\n\n${FileDefinition.replace(/;\s*\./, ' .')}\n\n${shaclLines}\n\n${sameAsLines}`;
         setRdfOutput(fullRdf);
-    }, [prefixes, properties, tokenName, tokenTicker, shapes, sameAsRelations]);
+    }, [prefixes, properties, shapes, sameAsRelations]);
 
     useEffect(() => { generateRdf(); }, [generateRdf]);
 
@@ -556,8 +552,8 @@ export default function App() {
             <div className="max-w-7xl mx-auto">
                 <header className="flex justify-between items-center mb-8">
                     <div className="text-left">
-                        <h1 className="text-4xl font-bold text-blue-400">eCash Semantic Token Creator</h1>
-                        <p className="text-gray-400 mt-2">Visually define your token's rules and generate its RDF metadata.</p>
+                        <h1 className="text-4xl font-bold text-blue-400">IPFS RDF File Creator</h1>
+                        <p className="text-gray-400 mt-2">Visually define a RDF file, rules and generate it for IPFS deployment.</p>
                     </div>
                     <div className="text-right">
                         {!webId ? (
@@ -581,7 +577,7 @@ export default function App() {
                     <div className="bg-gray-900/50 p-4 rounded-lg shadow-lg mb-8 border border-blue-500/30">
                         <h2 className="text-xl font-semibold mb-3 text-blue-300">Solid Pod Storage</h2>
                         <div className="flex items-start space-x-4">
-                            <Button onClick={handleSaveToPod} disabled={isSaving || !tokenName.trim()}>
+                            <Button onClick={handleSaveToPod} disabled={isSaving || !FileName.trim()}>
                                 {isSaving ? 'Saving...' : 'Save Current Draft'}
                             </Button>
                             <div className="flex-grow">
@@ -609,11 +605,9 @@ export default function App() {
                             {activeTab === 'properties' && (
                                 <div className="space-y-6">
                                     <div>
-                                        <h3 className="text-xl font-semibold mb-3 text-gray-200">Basic Token Details</h3>
+                                        <h3 className="text-xl font-semibold mb-3 text-gray-200">Basic File Details</h3>
                                         <div className="space-y-4 p-4 bg-gray-800/50 rounded-md">
-                                            <Input label="Token Name" value={tokenName} onChange={(e) => setTokenName(e.target.value)} placeholder="e.g., My Awesome Token" />
-                                            <Input label="Ticker Symbol" value={tokenTicker} onChange={(e) => setTokenTicker(e.target.value)} placeholder="e.g., MAT" />
-                                            <Input label="Decimals" type="number" value={tokenDecimals} onChange={(e) => setTokenDecimals(e.target.value)} />
+                                            <Input label="File Name" value={FileName} onChange={(e) => setFileName(e.target.value)} placeholder="e.g., My Awesome File" />
                                         </div>
                                     </div>
                                     <div>
@@ -754,7 +748,7 @@ export default function App() {
                                 {ipfsCid && (
                                     <div className="pt-4 space-y-3">
                                         <h3 className="text-lg font-semibold text-green-400">Success!</h3>
-                                        <p className="text-gray-400">Your token definition is now on the decentralized web.</p>
+                                        <p className="text-gray-400">Your File definition is now on the decentralized web.</p>
                                     </div>
                                 )}
                             </div>
@@ -763,27 +757,13 @@ export default function App() {
                         {ipfsCid && (
                              <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
                                 <h2 className="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2">Launch on eCash</h2>
-                                <p className="text-gray-400 mb-4">Use the following parameters to create your token in a wallet like Cashtab.</p>
+                                <p className="text-gray-400 mb-4">Use the following parameters to create your File in a wallet like Cashtab.</p>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-400 mb-1">Token Name</label>
+                                        <label className="block text-sm font-medium text-gray-400 mb-1">File Name</label>
                                         <div className="flex items-center space-x-2">
-                                            <p className="bg-gray-700 p-2 rounded-md font-mono text-sm flex-grow">{tokenName}</p>
-                                            <Button onClick={() => handleCopy(tokenName, 'Name Copied!')} variant="secondary">Copy</Button>
-                                        </div>
-                                    </div>
-                                     <div>
-                                        <label className="block text-sm font-medium text-gray-400 mb-1">Ticker Symbol</label>
-                                        <div className="flex items-center space-x-2">
-                                            <p className="bg-gray-700 p-2 rounded-md font-mono text-sm flex-grow">{tokenTicker}</p>
-                                            <Button onClick={() => handleCopy(tokenTicker, 'Ticker Copied!')} variant="secondary">Copy</Button>
-                                        </div>
-                                    </div>
-                                     <div>
-                                        <label className="block text-sm font-medium text-gray-400 mb-1">Decimals</label>
-                                        <div className="flex items-center space-x-2">
-                                            <p className="bg-gray-700 p-2 rounded-md font-mono text-sm flex-grow">{tokenDecimals}</p>
-                                            <Button onClick={() => handleCopy(tokenDecimals, 'Decimals Copied!')} variant="secondary">Copy</Button>
+                                            <p className="bg-gray-700 p-2 rounded-md font-mono text-sm flex-grow">{FileName}</p>
+                                            <Button onClick={() => handleCopy(FileName, 'Name Copied!')} variant="secondary">Copy</Button>
                                         </div>
                                     </div>
                                     <div>
