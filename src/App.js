@@ -209,7 +209,7 @@ function CreatorView() {
             </div>
             <div className="bg-gray-900 p-6 rounded-lg shadow-lg border border-purple-500/30">
                 <h2 className="text-2xl font-semibold mb-4 text-purple-300">Step 6: Provide IPFS CID</h2>
-                <p className="text-gray-400 mb-4">After uploading your file to IPFS, paste the Content ID (CID) below to generate your DNS record.</p>
+                <p className="text-gray-400 mb-4">Now its time to upload your file to IPFS.  If you don't already have IPFS, here is a <a href="https://docs.ipfs.tech/install/ipfs-desktop/">link to the IPFS Desktop App</a>. After uploading your file to IPFS, paste the Content ID (CID) below to generate your DNS record.</p>
                 <Input label="IPFS Content ID (CID)" value={userProvidedCid} onChange={e => setUserProvidedCid(e.target.value)} placeholder="Qm..." />
             </div>
             {userProvidedCid && (
