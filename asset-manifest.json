@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/IPFS-ADP/static/css/main.11911414.css",
-    "main.js": "/IPFS-ADP/static/js/main.9dac4f8b.js",
+    "main.css": "/IPFS-ADP/static/css/main.fb4dfbd3.css",
+    "main.js": "/IPFS-ADP/static/js/main.6eff94db.js",
     "index.html": "/IPFS-ADP/index.html",
-    "main.11911414.css.map": "/IPFS-ADP/static/css/main.11911414.css.map",
-    "main.9dac4f8b.js.map": "/IPFS-ADP/static/js/main.9dac4f8b.js.map"
+    "main.fb4dfbd3.css.map": "/IPFS-ADP/static/css/main.fb4dfbd3.css.map",
+    "main.6eff94db.js.map": "/IPFS-ADP/static/js/main.6eff94db.js.map"
   },
   "entrypoints": [
-    "static/css/main.11911414.css",
-    "static/js/main.9dac4f8b.js"
+    "static/css/main.fb4dfbd3.css",
+    "static/js/main.6eff94db.js"
   ]
 }
